@@ -1,6 +1,5 @@
 package com.youlai.system.service.impl;
 
-import com.youlai.system.model.vo.NoticeVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -11,6 +10,7 @@ import com.youlai.system.service.NoticeService;
 import com.youlai.system.model.entity.Notice;
 import com.youlai.system.model.form.NoticeForm;
 import com.youlai.system.model.query.NoticeQuery;
+import com.youlai.system.model.vo.NoticeVO;
 import com.youlai.system.converter.NoticeConverter;
 
 import java.util.Arrays;
@@ -32,7 +32,6 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
 
     private final NoticeConverter noticeConverter;
 
-
     /**
     * 获取通知公告分页列表
     *
@@ -42,7 +41,7 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
     @Override
     public IPage<NoticeVO> getNoticePage(NoticeQuery queryParams) {
         Page<NoticeVO> pageVO = this.baseMapper.getNoticePage(
-                new Page<>(queryParams.getPageNum(), queryParams.getPageSize()),
+                new Page<NoticeVO>(queryParams.getPageNum(), queryParams.getPageSize()),
                 queryParams
         );
         return pageVO;
