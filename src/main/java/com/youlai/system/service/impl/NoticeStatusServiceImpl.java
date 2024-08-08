@@ -44,6 +44,7 @@ public class NoticeStatusServiceImpl extends ServiceImpl<NoticeStatusMapper, Not
                 new Page<NoticeStatusVO>(queryParams.getPageNum(), queryParams.getPageSize()),
                 queryParams
         );
+
         return pageVO;
     }
 
