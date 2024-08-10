@@ -1,6 +1,8 @@
 package com.youlai.system.service.impl;
 
+import com.youlai.system.service.SseService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -31,6 +33,20 @@ import cn.hutool.core.util.StrUtil;
 public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> implements NoticeService {
 
     private final NoticeConverter noticeConverter;
+
+
+    private final SseService sseService;
+
+    /**
+     *   发送通知 getSendStatus() > 0 B端用户  0 未发布  1 已发送  2 已撤回
+     * @param notice
+     */
+    private void sendNotice(Notice notice) {
+        // 推送通知到前端
+        if(notice.getSendStatus() > 0){
+            sseService.sendNotification(noticeConverter.toVO(notice));
+        }
+    }
 
     /**
     * 获取通知公告分页列表
@@ -68,7 +84,11 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
     @Override
     public boolean saveNotice(NoticeForm formData) {
         Notice entity = noticeConverter.toEntity(formData);
-        return this.save(entity);
+        boolean result = this.save(entity);
+        if(result){
+            sendNotice(entity);
+        }
+        return result;
     }
     
     /**
@@ -81,7 +101,11 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
     @Override
     public boolean updateNotice(Long id,NoticeForm formData) {
         Notice entity = noticeConverter.toEntity(formData);
-        return this.updateById(entity);
+        boolean result = this.updateById(entity);
+        if(result){
+            sendNotice(entity);
+        }
+        return result;
     }
     
     /**
