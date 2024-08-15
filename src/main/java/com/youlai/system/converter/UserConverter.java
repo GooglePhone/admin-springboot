@@ -5,8 +5,10 @@ import com.youlai.system.model.bo.UserBO;
 import com.youlai.system.model.entity.SysUser;
 import com.youlai.system.model.form.UserForm;
 import com.youlai.system.model.dto.UserImportDTO;
+import com.youlai.system.model.form.UserProfileForm;
 import com.youlai.system.model.vo.UserInfoVO;
 import com.youlai.system.model.vo.UserPageVO;
+import com.youlai.system.model.vo.UserProfileVO;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -40,4 +42,8 @@ public interface UserConverter {
 
     SysUser toEntity(UserImportDTO vo);
 
+
+    UserProfileVO toProfileVO(SysUser entity);
+
+    SysUser toEntity(UserProfileForm formData);
 }

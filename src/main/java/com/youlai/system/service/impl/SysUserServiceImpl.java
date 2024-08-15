@@ -10,6 +10,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.youlai.system.common.constant.SystemConstants;
 import com.youlai.system.converter.UserConverter;
+import com.youlai.system.model.form.UserProfileForm;
+import com.youlai.system.model.vo.UserProfileVO;
 import com.youlai.system.security.util.SecurityUtils;
 import com.youlai.system.mapper.SysUserMapper;
 import com.youlai.system.model.dto.UserAuthInfo;
@@ -248,6 +250,30 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             userInfoVO.setPerms(perms);
         }
         return userInfoVO;
+    }
+
+    /**
+     * 获取个人中心用户信息
+     *
+     * @param userId 用户ID
+     * @return
+     */
+    @Override
+    public UserProfileVO getUserProfile(Long userId) {
+        SysUser entity = this.getById(userId);
+        return userConverter.toProfileVO(entity);
+    }
+
+    /**
+     * 修改个人中心用户信息
+     *
+     * @param formData 表单数据
+     * @return
+     */
+    @Override
+    public boolean updateUserProfile(UserProfileForm formData) {
+        SysUser entity = userConverter.toEntity(formData);
+        return this.updateById(entity);
     }
 
 
