@@ -10,16 +10,16 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
  */
 public class CustomSseEmitter extends SseEmitter {
 
-    private String userId; // 或者其他你需要的用户信息
+    private Long userId; // 或者其他你需要的用户信息
 
-    public CustomSseEmitter(Long timeout, String userId) {
+    public CustomSseEmitter(Long timeout, Long userId) {
         super(timeout);
         this.userId = userId;
     }
 
 
 
-    public String getUserId() {
+    public Long getUserId() {
         return userId;
     }
 }
