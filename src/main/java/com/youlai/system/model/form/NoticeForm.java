@@ -37,8 +37,8 @@ public class NoticeForm implements Serializable {
     private Integer noticeType;
 
     @Schema(description = "发布人")
-    @NotNull(message = "发布人不能为空")
-    private Long release;
+//    @NotNull(message = "发布人不能为空")
+    private Long releaseBy;
 
     @Schema(description = "优先级(0-低 1-中 2-高)")
     private Integer priority;
@@ -50,11 +50,11 @@ public class NoticeForm implements Serializable {
     private Integer sendStatus;
 
     @Schema(description = "发布时间")
-    @NotNull(message = "发布时间不能为空")
+//    @NotNull(message = "发布时间不能为空")
     private LocalDateTime sendTime;
 
     @Schema(description = "撤回时间")
-    @NotNull(message = "撤回时间不能为空")
+//    @NotNull(message = "撤回时间不能为空")
     private LocalDateTime recallTime;
 
     @Schema(description = "创建人ID")

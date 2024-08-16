@@ -5,8 +5,6 @@ import com.youlai.system.security.util.SecurityUtils;
 import com.youlai.system.service.SseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -26,6 +24,8 @@ public class SseController {
         CustomSseEmitter emitter = new CustomSseEmitter(60000L,userId); // 设置超时时间为60秒
         try {
             sseService.addEmitter(emitter);
+            // 发送一个测试事件
+            emitter.send(SseEmitter.event().name("test").data("测试测试测试"));
         } catch (Exception e) {
             emitter.completeWithError(e);
         }

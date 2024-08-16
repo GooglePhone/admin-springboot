@@ -1,7 +1,9 @@
 package com.youlai.system.service.impl;
 
+import com.youlai.system.security.util.SecurityUtils;
 import com.youlai.system.service.SseService;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -15,6 +17,7 @@ import com.youlai.system.model.query.NoticeQuery;
 import com.youlai.system.model.vo.NoticeVO;
 import com.youlai.system.converter.NoticeConverter;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -84,6 +87,9 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
     @Override
     public boolean saveNotice(NoticeForm formData) {
         Notice entity = noticeConverter.toEntity(formData);
+        entity.setCreateTime(LocalDateTime.now());
+        entity.setCreateBy(SecurityUtils.getUserId());
+        entity.setIsDelete(0);
         boolean result = this.save(entity);
         if(result){
             sendNotice(entity);

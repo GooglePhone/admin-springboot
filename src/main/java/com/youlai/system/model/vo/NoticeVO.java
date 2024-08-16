@@ -29,7 +29,7 @@ public class NoticeVO implements Serializable {
     @Schema(description = "通知类型")
     private Integer noticeType;
     @Schema(description = "发布人")
-    private Long release;
+    private Long releaseBy;
     @Schema(description = "优先级(0-低 1-中 2-高)")
     private Integer priority;
     @Schema(description = "目标类型(0-全体 1-指定)")

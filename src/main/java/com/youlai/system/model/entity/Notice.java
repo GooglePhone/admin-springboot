@@ -34,7 +34,7 @@ public class Notice extends BaseEntity {
     /**
      * 发布人
      */
-    private Long release;
+    private Long releaseBy;
     /**
      * 优先级(0-低 1-中 2-高)
      */

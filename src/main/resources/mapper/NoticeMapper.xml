@@ -8,7 +8,7 @@
                 title,
                 content,
                 notice_type,
-                release,
+                release_by,
                 priority,
                 tar_type,
                 send_status,
@@ -28,8 +28,8 @@
             <if test="queryParams.noticeType != null">
                 AND notice_type = #{queryParams.noticeType}
             </if>
-            <if test="queryParams.release != null">
-                AND release = #{queryParams.release}
+            <if test="queryParams.releaseBy != null">
+                AND release_by = #{queryParams.releaseBy}
             </if>
             <if test="queryParams.priority != null">
                 AND priority = #{queryParams.priority}

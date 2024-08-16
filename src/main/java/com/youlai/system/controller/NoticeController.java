@@ -1,7 +1,9 @@
 package com.youlai.system.controller;
 
+import com.youlai.system.security.util.SecurityUtils;
 import com.youlai.system.service.NoticeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.youlai.system.model.form.NoticeForm;
@@ -17,6 +19,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+
+import java.time.LocalDateTime;
 
 /**
  * 通知公告前端控制层

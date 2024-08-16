@@ -28,7 +28,7 @@ public interface SseService {
      * @param emitter 订阅者
      * @return 成功移除返回true，否则返回false
      */
-    boolean removeEmitter(CustomSseEmitter emitter);
+    boolean removeEmitter(Long userId);
 
     /**
      * 向指定订阅者发送通知
@@ -36,5 +36,5 @@ public interface SseService {
      * @param noticeVO  通知
      * @return 成功发送返回true，否则返回false
      */
-    boolean sendNotificationToEmitter(CustomSseEmitter emitter, NoticeVO noticeVO);
+    boolean sendNotificationToEmitter(Long userId, NoticeVO noticeVO);
 }

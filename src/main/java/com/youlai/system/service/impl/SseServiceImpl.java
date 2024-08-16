@@ -9,7 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Kylin
@@ -19,18 +20,19 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Slf4j
 public class SseServiceImpl implements SseService {
 
-    private final CopyOnWriteArrayList<CustomSseEmitter > emitterList = new CopyOnWriteArrayList<>();
+    private final Map<Long, CustomSseEmitter> emitterMap = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public boolean addEmitter(CustomSseEmitter emitter) {
         try {
-            emitter.onCompletion(() -> emitterList.remove(emitter));
-            emitter.onTimeout(() -> emitterList.remove(emitter));
-            emitterList.add(emitter);
+            emitter.onCompletion(() -> removeEmitter(emitter.getUserId()));
+            emitter.onTimeout(() -> removeEmitter(emitter.getUserId()));
+            emitterMap.put(emitter.getUserId(), emitter);
+            log.info("Added SSE emitter for user: {}", emitter.getUserId());
             return true;
         } catch (Exception e) {
-            log.error("添加SSE客户端失败", e);
+            log.error("Failed to add SSE emitter for user: {}", emitter.getUserId(), e);
             return false;
         }
     }
@@ -39,34 +41,50 @@ public class SseServiceImpl implements SseService {
     public boolean sendNotification(NoticeVO noticeVO) {
         try {
             String json = objectMapper.writeValueAsString(noticeVO);
-            emitterList.forEach(emitter -> {
+            emitterMap.forEach((userId, emitter) -> {
                 try {
                     emitter.send(SseEmitter.event().data(json));
+                    log.info("Sent notification to user: {}", userId);
                 } catch (IOException e) {
-                    log.error("发送通知失败", e);
+                    log.error("Failed to send notification to user: {}", userId, e);
                     emitter.completeWithError(e);
+                    removeEmitter(userId);
                 }
             });
             return true;
         } catch (Exception e) {
-            log.error("序列化通知失败", e);
+            log.error("Failed to serialize notification", e);
             return false;
         }
     }
 
     @Override
-    public boolean removeEmitter(CustomSseEmitter  emitter) {
-        return emitterList.remove(emitter);
+    public boolean removeEmitter(Long userId) {
+        CustomSseEmitter emitter = emitterMap.remove(userId);
+        if (emitter != null) {
+            emitter.complete();
+            log.info("Removed SSE emitter for user: {}", userId);
+            return true;
+        }
+        return false;
     }
 
     @Override
-    public boolean sendNotificationToEmitter(CustomSseEmitter emitter, NoticeVO noticeVO) {
+    public boolean sendNotificationToEmitter(Long userId, NoticeVO noticeVO) {
+        CustomSseEmitter emitter = emitterMap.get(userId);
+        if (emitter == null) {
+            log.warn("No SSE emitter found for user: {}", userId);
+            return false;
+        }
         try {
             String json = objectMapper.writeValueAsString(noticeVO);
             emitter.send(SseEmitter.event().data(json));
+            log.info("Sent notification to user: {}", userId);
             return true;
         } catch (Exception e) {
-            log.error("向指定的SSE客户端发送通知失败", e);
+            log.error("Failed to send notification to user: {}", userId, e);
+            emitter.completeWithError(e);
+            removeEmitter(userId);
             return false;
         }
     }
