@@ -1,5 +1,6 @@
 package com.youlai.system.service.impl;
 
+import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.youlai.system.model.entity.CustomSseEmitter;
 import com.youlai.system.model.vo.NoticeVO;
@@ -9,7 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -20,14 +23,14 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class SseServiceImpl implements SseService {
 
-    private final Map<Long, CustomSseEmitter> emitterMap = new ConcurrentHashMap<>();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final Map<Long, CustomSseEmitter> emitterMap = new HashMap<>();
 
     @Override
     public boolean addEmitter(CustomSseEmitter emitter) {
         try {
             emitter.onCompletion(() -> removeEmitter(emitter.getUserId()));
             emitter.onTimeout(() -> removeEmitter(emitter.getUserId()));
+            emitter.onError((e) -> removeEmitter(emitter.getUserId()));
             emitterMap.put(emitter.getUserId(), emitter);
             log.info("Added SSE emitter for user: {}", emitter.getUserId());
             return true;
@@ -40,32 +43,37 @@ public class SseServiceImpl implements SseService {
     @Override
     public boolean sendNotification(NoticeVO noticeVO) {
         try {
-            String json = objectMapper.writeValueAsString(noticeVO);
-            emitterMap.forEach((userId, emitter) -> {
+            String json = JSONUtil.parseObj(noticeVO).toString();
+            Set<Long> longs = emitterMap.keySet();
+            for (Long userId : longs) {
                 try {
-                    emitter.send(SseEmitter.event().data(json));
-                    log.info("Sent notification to user: {}", userId);
-                } catch (IOException e) {
-                    log.error("Failed to send notification to user: {}", userId, e);
-                    emitter.completeWithError(e);
+                    CustomSseEmitter emitter = emitterMap.get(userId);
+                    if(emitter != null) {
+                        emitter.send(SseEmitter.event().data(json));
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to send notification to user: {}", userId);
                     removeEmitter(userId);
                 }
-            });
+            }
             return true;
         } catch (Exception e) {
-            log.error("Failed to serialize notification", e);
+            log.error("Failed to serialize notification");
             return false;
         }
     }
 
     @Override
     public boolean removeEmitter(Long userId) {
-        CustomSseEmitter emitter = emitterMap.remove(userId);
-        if (emitter != null) {
-            emitter.complete();
-            log.info("Removed SSE emitter for user: {}", userId);
-            return true;
+        if(emitterMap.containsKey(userId)){
+            CustomSseEmitter emitter = emitterMap.remove(userId);
+            if (emitter != null) {
+                emitter.complete();
+                log.info("Removed SSE emitter for user: {}", userId);
+                return true;
+            }
         }
+
         return false;
     }
 
@@ -77,7 +85,7 @@ public class SseServiceImpl implements SseService {
             return false;
         }
         try {
-            String json = objectMapper.writeValueAsString(noticeVO);
+            String json = JSONUtil.parseObj(noticeVO).toString();
             emitter.send(SseEmitter.event().data(json));
             log.info("Sent notification to user: {}", userId);
             return true;
@@ -87,5 +95,10 @@ public class SseServiceImpl implements SseService {
             removeEmitter(userId);
             return false;
         }
+    }
+
+    @Override
+    public String getConNum() {
+        return emitterMap.keySet().size()+"";
     }
 }

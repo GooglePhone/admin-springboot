@@ -16,13 +16,5 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface NoticeMapper extends BaseMapper<Notice> {
 
-    /**
-     * 获取通知公告分页数据
-     *
-     * @param page 分页对象
-     * @param queryParams 查询参数
-     * @return
-     */
-    Page<NoticeVO> getNoticePage(Page<NoticeVO> page, NoticeQuery queryParams);
 
 }

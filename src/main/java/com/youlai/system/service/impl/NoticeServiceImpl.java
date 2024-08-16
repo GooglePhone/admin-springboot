@@ -1,5 +1,6 @@
 package com.youlai.system.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.youlai.system.security.util.SecurityUtils;
 import com.youlai.system.service.SseService;
 import lombok.RequiredArgsConstructor;
@@ -59,11 +60,10 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
     */
     @Override
     public IPage<NoticeVO> getNoticePage(NoticeQuery queryParams) {
-        Page<NoticeVO> pageVO = this.baseMapper.getNoticePage(
-                new Page<NoticeVO>(queryParams.getPageNum(), queryParams.getPageSize()),
-                queryParams
-        );
-        return pageVO;
+        LambdaQueryWrapper<Notice> queryWrapper = new LambdaQueryWrapper<Notice>()
+                .orderByDesc(Notice::getId);
+        Page<Notice> page = this.page(new Page<>(queryParams.getPageNum(), queryParams.getPageSize()), queryWrapper);
+        return noticeConverter.toPageVO(page);
     }
     
     /**

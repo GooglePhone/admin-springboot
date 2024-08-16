@@ -1,5 +1,6 @@
 package com.youlai.system.converter;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.youlai.system.model.vo.NoticeVO;
 import org.mapstruct.Mapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -20,4 +21,6 @@ public interface NoticeConverter{
     Notice toEntity(NoticeForm formData);
 
     NoticeVO toVO(Notice notice);
+
+    Page<NoticeVO> toPageVO(Page<Notice> page);
 }

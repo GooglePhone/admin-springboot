@@ -25,16 +25,18 @@ public interface SseService {
 
     /**
      * 移除订阅者
-     * @param emitter 订阅者
+     * @param userId 订阅者
      * @return 成功移除返回true，否则返回false
      */
     boolean removeEmitter(Long userId);
 
     /**
      * 向指定订阅者发送通知
-     * @param emitter   订阅者
+     * @param userId   订阅者
      * @param noticeVO  通知
      * @return 成功发送返回true，否则返回false
      */
     boolean sendNotificationToEmitter(Long userId, NoticeVO noticeVO);
+
+    String getConNum();
 }
