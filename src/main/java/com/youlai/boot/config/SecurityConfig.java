@@ -1,7 +1,6 @@
 package com.youlai.boot.config;
 
 import cn.hutool.captcha.generator.CodeGenerator;
-import cn.hutool.core.collection.CollectionUtil;
 import com.youlai.boot.common.constant.SecurityConstants;
 import com.youlai.boot.config.property.SecurityProperties;
 import com.youlai.boot.core.filter.RateLimiterFilter;
@@ -19,7 +18,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -27,6 +25,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Spring Security 权限配置
@@ -49,12 +50,14 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // 不走过滤器链的放行配置
+        List<String> ignoreUrls = new ArrayList<>(securityProperties.getIgnoreUrls());
+        ignoreUrls.add(SecurityConstants.LOGIN_PATH);
         http
-
-                .authorizeHttpRequests(requestMatcherRegistry ->
-                        requestMatcherRegistry.requestMatchers(SecurityConstants.LOGIN_PATH).permitAll()
-                                .anyRequest().authenticated()
-                )
+                .authorizeHttpRequests(requestMatcherRegistry -> {
+                    ignoreUrls.stream().distinct().forEach(x -> requestMatcherRegistry.requestMatchers(x).permitAll());
+                    requestMatcherRegistry.anyRequest().authenticated();
+                })
                 .exceptionHandling(httpSecurityExceptionHandlingConfigurer ->
                         httpSecurityExceptionHandlingConfigurer
                                 .authenticationEntryPoint(authenticationEntryPoint)
@@ -63,7 +66,6 @@ public class SecurityConfig {
                 .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
-
         ;
         // 限流过滤器
         http.addFilterBefore(new RateLimiterFilter(redisTemplate, configService), UsernamePasswordAuthenticationFilter.class);
@@ -73,18 +75,6 @@ public class SecurityConfig {
         http.addFilterBefore(new JwtValidationFilter(redisTemplate,securityProperties.getJwt().getKey()), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    /**
-     * 不走过滤器链的放行配置
-     */
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> {
-            if (CollectionUtil.isNotEmpty(securityProperties.getIgnoreUrls())) {
-                web.ignoring().requestMatchers(securityProperties.getIgnoreUrls().toArray(new String[0]));
-            }
-        };
     }
 
     /**
